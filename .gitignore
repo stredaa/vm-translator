@@ -1,0 +1,6 @@
+*.pyc
+*.exe
+
+.ipynb_checkpoints
+train_batch
+mnemonics

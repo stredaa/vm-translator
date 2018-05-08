@@ -1,3 +1,7 @@
+from logging import getLogger, StreamHandler, Formatter, DEBUG, INFO
+from sys import stdout
+import yara
+
 from miasm2.analysis.binary import Container
 from miasm2.core.asmblock import AsmLabel
 from miasm2.core.interval import interval
@@ -5,32 +9,7 @@ from miasm2.analysis.machine import Machine
 from miasm2.expression.expression import ExprId
 from miasm2.core.utils import upck32
 
-from logging import getLogger, StreamHandler, Formatter, DEBUG, INFO
-from sys import stdout
-import yara
-
-from abc import ABCMeta
-
-
-class Mnemonic(object):
-    __metaclass__ = ABCMeta
-
-    def _set_logging(self, verbose):
-        self._logger = getLogger(hex(hash(self)))
-        if verbose:
-            self._logger.setLevel(DEBUG)
-        else:
-            self._logger.setLevel(INFO)
-        log_handler = StreamHandler(stdout)
-        log_handler.setFormatter(Formatter('[%(levelname)s]\t%(message)s'))
-        self._logger.addHandler(log_handler)
-
-    def __init__(self, code, verbose=False):
-        self.code = code
-        self._set_logging(verbose)
-
-    def __str__(self):
-        return self.name
+from vm.mnemonic import Mnemonic
 
 
 class ASMBlock():
@@ -38,7 +17,7 @@ class ASMBlock():
         self.code = lines
 
     def asm(self):
-        return map(lambda x: x.b, self.code)
+        return [line.b for line in self.code]
 
 
 class PEAnalysis(object):
@@ -61,6 +40,7 @@ class PEAnalysis(object):
         self.fn = {}
         self.interval = interval()
         self.deep = 0
+        self.offset = 0
 
         self._set_logging(verbose)
         self._logger.info("PE loaded")
@@ -90,10 +70,10 @@ class PEAnalysis(object):
                 self.process_fn(dest.name.offset)
 
     def process_rest(self):
-        for a, b in self.interval.intervals:
-            if b in self.fn:
+        for _, right in self.interval.intervals:
+            if right in self.fn:
                 continue
-            self.process_fn(b)
+            self.process_fn(right)
 
     def analyze(self, analyze_unreachable=False):
         self.process_fn(self.entry_point)
@@ -110,10 +90,7 @@ class WProtectEmulator(PEAnalysis):
         data = "".join(map(lambda x: x.b, block.lines))
         switch = yara.compile("WProtect.yara")
         match = switch.match(data=data)
-        try:
-            if "WProtect" not in map(lambda x: x.rule, match):
-                return -1
-        except:
+        if "WProtect" not in map(lambda x: x.rule, match):
             return -1
         # verify jump table
         # yara-rule/condition/hexstring
@@ -162,8 +139,8 @@ class WProtectEmulator(PEAnalysis):
         self.vm_offset = processed
         return True
 
-    def recoverMnemonics(self, offset, mnemonic_cls, amount=56):
-        def getBlock(offset):
+    def recover_mnemonics(self, offset, mnemonic_cls, amount=56):
+        def get_block(offset):
             mdis = self.machine.dis_engine(self.bin_stream)
             block = mdis.dis_block(offset)
 
@@ -178,9 +155,9 @@ class WProtectEmulator(PEAnalysis):
             raise TypeError("Given mnemonic class does not inherit Mnemonic!")
 
         addresses = [upck32(self.bin_stream.getbytes(
-            offset + 4 + 4 * i, 4)) for i in xrange(amount)]
+            offset + 4 + 4 * i, 4)) for i in range(amount)]
         magic_dword = upck32(self.bin_stream.getbytes(offset, 4))
         self._logger.debug("magic DWORD: " + hex(magic_dword))
-        mnemonics = map(lambda x: mnemonic_cls(getBlock(x)), addresses)
+        mnemonics = map(lambda x: mnemonic_cls(get_block(x)), addresses)
         self._logger.info("Mnemonics loaded")
         return magic_dword, mnemonics
