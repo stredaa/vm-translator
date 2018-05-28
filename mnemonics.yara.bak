@@ -1,4 +1,4 @@
-rule mnemonic_0
+rule shld
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -11,13 +11,13 @@ rule mnemonic_0
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x8bU\x04.{0,50}\x8aM\x08.{0,50}E.{0,50}\x0f\xa5\xd0.{0,50}\x89E\x04.{0,50}\x9c.{0,50}\x8fE\x00/
+        $hex_1 = { 8b 45 00 [0-40] 8b 55 04 [0-40] 8a 4d 08 [0-40] 45 [0-40] 0f a5 d0 [0-40] 89 45 04 [0-40] 9c [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_1
+rule w_read_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -27,13 +27,13 @@ rule mnemonic_1
     MOV        WORD PTR [EBP], AX
     */
     strings:
-        $re_1 = /\x8bF\xfc.{0,50}\x83\xee\x04.{0,50}f\x8bD\x05\x00.{0,50}\x83\xed\x02.{0,50}f\x89E\x00/
+        $hex_1 = { 8b 46 fc [0-40] 83 ee 04 [0-40] 66 8b 44 05 00 [0-40] 83 ed 02 [0-40] 66 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_2
+rule b_write_mem
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -42,13 +42,13 @@ rule mnemonic_2
     MOV        BYTE PTR [EAX], DL
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x8aU\x04.{0,50}\x83\xc5\x05.{0,50}\x88\x10/
+        $hex_1 = { 8b 45 00 [0-40] 8a 55 04 [0-40] 83 c5 05 [0-40] 88 10 }
 
 
     condition:
         all of them
 }
-rule mnemonic_3
+rule d_read_mem
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -56,13 +56,13 @@ rule mnemonic_3
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x8b\x00.{0,50}\x89E\x00/
+        $hex_1 = { 8b 45 00 [0-40] 8b 00 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_4
+rule b_shl
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -75,25 +75,25 @@ rule mnemonic_4
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8aE\x00.{0,50}\xd2\xe0.{0,50}\x88E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8a 45 00 [0-40] d2 e0 [0-40] 88 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_5
+rule pop_stack_top_base
 {
     /*
     MOV        EBP, DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8bm\x00/
+        $hex_1 = { 8b 6d 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_6
+rule d_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -104,13 +104,13 @@ rule mnemonic_6
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xb6\xc0.{0,50}\x8b\x04\x07.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f b6 c0 [0-40] 8b 04 07 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_7
+rule b_shr
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -123,13 +123,13 @@ rule mnemonic_7
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8aE\x00.{0,50}\xd2\xe8.{0,50}\x88E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8a 45 00 [0-40] d2 e8 [0-40] 88 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_8
+rule w_nand
 {
     /*
     MOV        AX, WORD PTR [EBP]
@@ -144,13 +144,13 @@ rule mnemonic_8
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /f\x8bE\x00.{0,50}f\xf7\xd0.{0,50}\x83\xc5\x02.{0,50}f\x8bU\x00.{0,50}f\xf7\xd2.{0,50}f#\xc2.{0,50}f\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 66 8b 45 00 [0-40] 66 f7 d0 [0-40] 83 c5 02 [0-40] 66 8b 55 00 [0-40] 66 f7 d2 [0-40] 66 23 c2 [0-40] 66 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_9
+rule w_shr
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -163,13 +163,13 @@ rule mnemonic_9
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}f\x8bE\x00.{0,50}f\xd3\xe8.{0,50}f\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 66 8b 45 00 [0-40] 66 d3 e8 [0-40] 66 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_10
+rule b_push_imm
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -178,13 +178,13 @@ rule mnemonic_10
     MOV        BYTE PTR [EBP], AL
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}M.{0,50}\x88E\x00/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 4d [0-40] 88 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_11
+rule d_shl
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -197,13 +197,13 @@ rule mnemonic_11
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8bE\x00.{0,50}\xd3\xe0.{0,50}\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8b 45 00 [0-40] d3 e0 [0-40] 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_12
+rule b_write_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -213,13 +213,13 @@ rule mnemonic_12
     INC        EBP
     */
     strings:
-        $re_1 = /\x8bF\xfc.{0,50}\x83\xee\x04.{0,50}\x8aU\x00.{0,50}\x88T\x05\x00.{0,50}E/
+        $hex_1 = { 8b 46 fc [0-40] 83 ee 04 [0-40] 8a 55 00 [0-40] 88 54 05 00 [0-40] 45 }
 
 
     condition:
         all of them
 }
-rule mnemonic_13
+rule d_ror
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -232,13 +232,13 @@ rule mnemonic_13
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8bE\x00.{0,50}\xd3\xc8.{0,50}\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8b 45 00 [0-40] d3 c8 [0-40] 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_14
+rule push_stack_top_base
 {
     /*
     MOV        EAX, EBP
@@ -246,13 +246,13 @@ rule mnemonic_14
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /\x8b\xc5.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 8b c5 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_15
+rule w_rol
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -265,13 +265,13 @@ rule mnemonic_15
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}f\x8bE\x00.{0,50}f\xd3\xc0.{0,50}f\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 66 8b 45 00 [0-40] 66 d3 c0 [0-40] 66 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_16
+rule d_write_mem
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -280,13 +280,13 @@ rule mnemonic_16
     MOV        DWORD PTR [EAX], EDX
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x8bU\x04.{0,50}\x83\xc5\x08.{0,50}\x89\x10/
+        $hex_1 = { 8b 45 00 [0-40] 8b 55 04 [0-40] 83 c5 08 [0-40] 89 10 }
 
 
     condition:
         all of them
 }
-rule mnemonic_17
+rule b_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -297,13 +297,13 @@ rule mnemonic_17
     MOV        BYTE PTR [EBP], AL
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xb6\xc0.{0,50}\x8a\x04\x07.{0,50}M.{0,50}\x88E\x00/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f b6 c0 [0-40] 8a 04 07 [0-40] 4d [0-40] 88 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_18
+rule b_read_mem
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -312,18 +312,21 @@ rule mnemonic_18
     MOV        BYTE PTR [EBP], AL
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x83\xc5\x03.{0,50}\x8a\x00.{0,50}\x88E\x00/
+        $hex_1 = { 8b 45 00 [0-40] 83 c5 03 [0-40] 8a 00 [0-40] 88 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_19
+rule check_stack
 {
     /*
+    LEA        EAX, DWORD PTR [EDI + 0x64]
     CMP        EBP, EAX
     LEA        ECX, DWORD PTR [EDI + 0x64]
     SUB        ECX, EDI
+    LEA        EAX, DWORD PTR [EBP + 0xFFFFFF38]
+    AND        AL, 0xFC
     MOV        ESP, EAX
     PUSH       ESI
     MOV        ESI, EDI
@@ -335,13 +338,13 @@ rule mnemonic_19
     POP        ESI
     */
     strings:
-        $re_1 = /;\xe8.{0,50}\x8dOd.{0,50}+\xcf.{0,50}\x8b\xe0.{0,50}V.{0,50}\x8b\xf7.{0,50}\x8b\xf8.{0,50}\x8b\xd1.{0,50}\xfc.{0,50}\xf3\xa4.{0,50}+\xfa.{0,50}^/
+        $hex_1 = { 8d 47 64 [0-40] 3b e8 [0-40] 8d 4f 64 [0-40] 2b cf [0-40] 8d 85 38 ff ff ff [0-40] 24 fc [0-40] 8b e0 [0-40] 56 [0-40] 8b f7 [0-40] 8b f8 [0-40] 8b d1 [0-40] fc [0-40] f3 a4 [0-40] 2b fa [0-40] 5e }
 
 
     condition:
         all of them
 }
-rule mnemonic_20
+rule d_shr
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -354,13 +357,13 @@ rule mnemonic_20
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8bE\x00.{0,50}\xd3\xe8.{0,50}\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8b 45 00 [0-40] d3 e8 [0-40] 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_21
+rule b_nand
 {
     /*
     MOV        AL, BYTE PTR [EBP]
@@ -375,13 +378,13 @@ rule mnemonic_21
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aE\x00.{0,50}\xf6\xd0.{0,50}E.{0,50}\x8aU\x00.{0,50}\xf6\xd2.{0,50}"\xc2.{0,50}\x88E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 45 00 [0-40] f6 d0 [0-40] 45 [0-40] 8a 55 00 [0-40] f6 d2 [0-40] 22 c2 [0-40] 88 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_22
+rule d_nand
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -396,13 +399,13 @@ rule mnemonic_22
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\xf7\xd0.{0,50}\x83\xc5\x04.{0,50}\x8bU\x00.{0,50}\xf7\xd2.{0,50}#\xc2.{0,50}\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8b 45 00 [0-40] f7 d0 [0-40] 83 c5 04 [0-40] 8b 55 00 [0-40] f7 d2 [0-40] 23 c2 [0-40] 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_23
+rule run_stack
 {
     /*
     MOV        AL, BYTE PTR [EBP]
@@ -413,13 +416,13 @@ rule mnemonic_23
     CALL       EDX
     */
     strings:
-        $re_1 = /\x8aE\x00.{0,50}\x0f\xb6\xc0.{0,50}E.{0,50}\x8b\xd5.{0,50}\x03\xe8.{0,50}\xff\xd2/
+        $hex_1 = { 8a 45 00 [0-40] 0f b6 c0 [0-40] 45 [0-40] 8b d5 [0-40] 03 e8 [0-40] ff d2 }
 
 
     condition:
         all of them
 }
-rule mnemonic_24
+rule b_push_imm_zx
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -429,13 +432,13 @@ rule mnemonic_24
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xb6\xc0.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f b6 c0 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_25
+rule b_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -446,13 +449,13 @@ rule mnemonic_25
     INC        EBP
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xb6\xc0.{0,50}\x8aU\x00.{0,50}\x88\x14\x07.{0,50}E/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f b6 c0 [0-40] 8a 55 00 [0-40] 88 14 07 [0-40] 45 }
 
 
     condition:
         all of them
 }
-rule mnemonic_26
+rule cpuid
 {
     /*
     CPUID
@@ -463,13 +466,13 @@ rule mnemonic_26
     MOV        DWORD PTR [EBP], EDX
     */
     strings:
-        $re_1 = /\x0f\xa2.{0,50}\x83\xed\x10.{0,50}\x89E\x0c.{0,50}\x89]\x08.{0,50}\x89M\x04.{0,50}\x89U\x00/
+        $hex_1 = { 0f a2 [0-40] 83 ed 10 [0-40] 89 45 0c [0-40] 89 5d 08 [0-40] 89 4d 04 [0-40] 89 55 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_27
+rule w_ror
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -482,13 +485,13 @@ rule mnemonic_27
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}f\x8bE\x00.{0,50}f\xd3\xc8.{0,50}f\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 66 8b 45 00 [0-40] 66 d3 c8 [0-40] 66 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_28
+rule w_shl
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -501,13 +504,13 @@ rule mnemonic_28
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}f\x8bE\x00.{0,50}f\xd3\xe0.{0,50}f\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 66 8b 45 00 [0-40] 66 d3 e0 [0-40] 66 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_29
+rule w_write_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -517,13 +520,13 @@ rule mnemonic_29
     ADD        EBP, 0x2
     */
     strings:
-        $re_1 = /\x8bF\xfc.{0,50}\x83\xee\x04.{0,50}f\x8bU\x00.{0,50}f\x89T\x05\x00.{0,50}\x83\xc5\x02/
+        $hex_1 = { 8b 46 fc [0-40] 83 ee 04 [0-40] 66 8b 55 00 [0-40] 66 89 54 05 00 [0-40] 83 c5 02 }
 
 
     condition:
         all of them
 }
-rule mnemonic_30
+rule b_read_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -533,13 +536,13 @@ rule mnemonic_30
     MOV        BYTE PTR [EBP], AL
     */
     strings:
-        $re_1 = /\x8bF\xfc.{0,50}\x83\xee\x04.{0,50}\x8a\x04(.{0,50}\x83\xed\x01.{0,50}\x88E\x00/
+        $hex_1 = { 8b 46 fc [0-40] 83 ee 04 [0-40] 8a 04 28 [0-40] 83 ed 01 [0-40] 88 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_31
+rule d_rol
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -552,13 +555,13 @@ rule mnemonic_31
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8bE\x00.{0,50}\xd3\xc0.{0,50}\x89E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8b 45 00 [0-40] d3 c0 [0-40] 89 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_32
+rule rdtsc
 {
     /*
     RDTSC
@@ -567,23 +570,23 @@ rule mnemonic_32
     MOV        DWORD PTR [EBP + 0x4], EAX
     */
     strings:
-        $re_1 = /\x0f1.{0,50}\x83\xed\x08.{0,50}\x89U\x00.{0,50}\x89E\x04/
+        $hex_1 = { 0f 31 [0-40] 83 ed 08 [0-40] 89 55 00 [0-40] 89 45 04 }
 
 
     condition:
         all of them
 }
-rule mnemonic_33
+rule nop
 {
 
     strings:
-        $re_1 = //
+        $hex_1 = { ?? }
 
 
     condition:
         all of them
 }
-rule mnemonic_34
+rule w_read_mem
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -592,13 +595,13 @@ rule mnemonic_34
     MOV        WORD PTR [EBP], AX
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x83\xc5\x02.{0,50}f\x8b\x00.{0,50}f\x89E\x00/
+        $hex_1 = { 8b 45 00 [0-40] 83 c5 02 [0-40] 66 8b 00 [0-40] 66 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_35
+rule w_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -609,13 +612,13 @@ rule mnemonic_35
     ADD        EBP, 0x2
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xb6\xc0.{0,50}f\x8bU\x00.{0,50}f\x89\x14\x07.{0,50}\x83\xc5\x02/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f b6 c0 [0-40] 66 8b 55 00 [0-40] 66 89 14 07 [0-40] 83 c5 02 }
 
 
     condition:
         all of them
 }
-rule mnemonic_36
+rule w_add
 {
     /*
     MOV        AX, WORD PTR [EBP]
@@ -625,13 +628,13 @@ rule mnemonic_36
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /f\x8bE\x00.{0,50}f\x01E\x02.{0,50}\x9c.{0,50}\x83\xed\x02.{0,50}\x8fE\x00/
+        $hex_1 = { 66 8b 45 00 [0-40] 66 01 45 02 [0-40] 9c [0-40] 83 ed 02 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_37
+rule d_write_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -641,13 +644,13 @@ rule mnemonic_37
     ADD        EBP, 0x4
     */
     strings:
-        $re_1 = /\x8bF\xfc.{0,50}\x83\xee\x04.{0,50}\x8bU\x00.{0,50}\x89T\x05\x00.{0,50}\x83\xc5\x04/
+        $hex_1 = { 8b 46 fc [0-40] 83 ee 04 [0-40] 8b 55 00 [0-40] 89 54 05 00 [0-40] 83 c5 04 }
 
 
     condition:
         all of them
 }
-rule mnemonic_38
+rule ins
 {
     /*
     SUB        EBP, 0x2
@@ -656,13 +659,13 @@ rule mnemonic_38
     MOV        WORD PTR [EBP], AX
     */
     strings:
-        $re_1 = /\x83\xed\x02.{0,50}\x9b.{0,50}\xdf\xe0.{0,50}f\x89E\x00/
+        $hex_1 = { 83 ed 02 [0-40] 9b [0-40] df e0 [0-40] 66 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_39
+rule w_push_imm_zx
 {
     /*
     MOV        AX, WORD PTR [ESI + 0xFFFFFFFE]
@@ -672,13 +675,13 @@ rule mnemonic_39
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /f\x8bF\xfe.{0,50}\x83\xee\x02.{0,50}\x0f\xb7\xc0.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 66 8b 46 fe [0-40] 83 ee 02 [0-40] 0f b7 c0 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_40
+rule w_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -689,13 +692,13 @@ rule mnemonic_40
     MOV        WORD PTR [EBP], AX
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xb6\xc0.{0,50}f\x8b\x04\x07.{0,50}\x83\xed\x02.{0,50}f\x89E\x00/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f b6 c0 [0-40] 66 8b 04 07 [0-40] 83 ed 02 [0-40] 66 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_41
+rule b_add
 {
     /*
     MOV        AL, BYTE PTR [EBP]
@@ -705,13 +708,13 @@ rule mnemonic_41
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aE\x00.{0,50}\x00E\x01.{0,50}\x9c.{0,50}\x83\xed\x03.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 45 00 [0-40] 00 45 01 [0-40] 9c [0-40] 83 ed 03 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_42
+rule b_rol
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -724,13 +727,13 @@ rule mnemonic_42
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8aE\x00.{0,50}\xd2\xc0.{0,50}\x88E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8a 45 00 [0-40] d2 c0 [0-40] 88 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_43
+rule shrd
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -743,13 +746,13 @@ rule mnemonic_43
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x8bU\x04.{0,50}\x8aM\x08.{0,50}E.{0,50}\x0f\xad\xd0.{0,50}\x89E\x04.{0,50}\x9c.{0,50}\x8fE\x00/
+        $hex_1 = { 8b 45 00 [0-40] 8b 55 04 [0-40] 8a 4d 08 [0-40] 45 [0-40] 0f ad d0 [0-40] 89 45 04 [0-40] 9c [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_44
+rule d_push_imm
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -758,13 +761,13 @@ rule mnemonic_44
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /\x8bF\xfc.{0,50}\x83\xee\x04.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 8b 46 fc [0-40] 83 ee 04 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_45
+rule w_push_imm
 {
     /*
     MOV        AX, WORD PTR [ESI + 0xFFFFFFFE]
@@ -773,13 +776,13 @@ rule mnemonic_45
     MOV        WORD PTR [EBP], AX
     */
     strings:
-        $re_1 = /f\x8bF\xfe.{0,50}\x83\xee\x02.{0,50}\x83\xed\x02.{0,50}f\x89E\x00/
+        $hex_1 = { 66 8b 46 fe [0-40] 83 ee 02 [0-40] 83 ed 02 [0-40] 66 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_46
+rule set_key
 {
     /*
     MOV        EBX, DWORD PTR [EBP]
@@ -789,13 +792,13 @@ rule mnemonic_46
     ADD        EBP, 0x4
     */
     strings:
-        $re_1 = /\x8b]\x00.{0,50}\x83\xc5\x04.{0,50}\x8bE\x00.{0,50}\x8b\xf0.{0,50}\x83\xc5\x04/
+        $hex_1 = { 8b 5d 00 [0-40] 83 c5 04 [0-40] 8b 45 00 [0-40] 8b f0 [0-40] 83 c5 04 }
 
 
     condition:
         all of them
 }
-rule mnemonic_47
+rule d_add
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -804,32 +807,34 @@ rule mnemonic_47
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x01E\x04.{0,50}\x9c.{0,50}\x8fE\x00/
+        $hex_1 = { 8b 45 00 [0-40] 01 45 04 [0-40] 9c [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_48
+rule ret
 {
     /*
     MOV        ESP, EBP
     POP        EDI
     POP        ESI
     POP        EBP
+    POP        EBX
     POP        EDX
     POP        ECX
+    POP        EAX
     POPFD
     RET
     */
     strings:
-        $re_1 = /\x8b\xe5.{0,50}_.{0,50}^.{0,50}].{0,50}Z.{0,50}Y.{0,50}\x9d.{0,50}\xc3/
+        $hex_1 = { 8b e5 [0-40] 5f [0-40] 5e [0-40] 5d [0-40] 5b [0-40] 5a [0-40] 59 [0-40] 58 [0-40] 9d [0-40] c3 }
 
 
     condition:
         all of them
 }
-rule mnemonic_49
+rule w_write_mem
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -838,13 +843,13 @@ rule mnemonic_49
     MOV        WORD PTR [EAX], DX
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}f\x8bU\x04.{0,50}\x83\xc5\x06.{0,50}f\x89\x10/
+        $hex_1 = { 8b 45 00 [0-40] 66 8b 55 04 [0-40] 83 c5 06 [0-40] 66 89 10 }
 
 
     condition:
         all of them
 }
-rule mnemonic_50
+rule d_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -855,13 +860,13 @@ rule mnemonic_50
     ADD        EBP, 0x4
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xb6\xc0.{0,50}\x8bU\x00.{0,50}\x89\x14\x07.{0,50}\x83\xc5\x04/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f b6 c0 [0-40] 8b 55 00 [0-40] 89 14 07 [0-40] 83 c5 04 }
 
 
     condition:
         all of them
 }
-rule mnemonic_51
+rule set_pc
 {
     /*
     MOV        EAX, DWORD PTR [EBP]
@@ -869,13 +874,13 @@ rule mnemonic_51
     ADD        EBP, 0x4
     */
     strings:
-        $re_1 = /\x8bE\x00.{0,50}\x8b\xf0.{0,50}\x83\xc5\x04/
+        $hex_1 = { 8b 45 00 [0-40] 8b f0 [0-40] 83 c5 04 }
 
 
     condition:
         all of them
 }
-rule mnemonic_52
+rule d_read_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -885,13 +890,13 @@ rule mnemonic_52
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /\x8bF\xfc.{0,50}\x83\xee\x04.{0,50}\x8bD\x05\x00.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 8b 46 fc [0-40] 83 ee 04 [0-40] 8b 44 05 00 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_53
+rule w_push_imm_sx
 {
     /*
     MOV        AX, WORD PTR [ESI + 0xFFFFFFFE]
@@ -901,13 +906,13 @@ rule mnemonic_53
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /f\x8bF\xfe.{0,50}\x83\xee\x02.{0,50}\x0f\xbf\xc0.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 66 8b 46 fe [0-40] 83 ee 02 [0-40] 0f bf c0 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_54
+rule b_ror
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -920,13 +925,13 @@ rule mnemonic_54
     POP        DWORD PTR [EBP]
     */
     strings:
-        $re_1 = /\x8aM\x00.{0,50}E.{0,50}\x8aE\x00.{0,50}\xd2\xc8.{0,50}\x88E\x00.{0,50}\x9c.{0,50}\x83\xed\x04.{0,50}\x8fE\x00/
+        $hex_1 = { 8a 4d 00 [0-40] 45 [0-40] 8a 45 00 [0-40] d2 c8 [0-40] 88 45 00 [0-40] 9c [0-40] 83 ed 04 [0-40] 8f 45 00 }
 
 
     condition:
         all of them
 }
-rule mnemonic_55
+rule b_push_imm_sx
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -936,7 +941,7 @@ rule mnemonic_55
     MOV        DWORD PTR [EBP], EAX
     */
     strings:
-        $re_1 = /\x8aF\xff.{0,50}N.{0,50}\x0f\xbe\xc0.{0,50}\x83\xed\x04.{0,50}\x89E\x00/
+        $hex_1 = { 8a 46 ff [0-40] 4e [0-40] 0f be c0 [0-40] 83 ed 04 [0-40] 89 45 00 }
 
 
     condition:

@@ -4,7 +4,7 @@ from abc import ABCMeta
 
 import yara
 
-from vm.obfuscation import get_bytes
+from vm.obfuscation import get_bytes, extract_obfuscation, is_eax, is_ebx
 
 
 class Mnemonic(object):
@@ -35,6 +35,27 @@ class WProtectMnemonic(Mnemonic):
     def __init__(self, code):
         super(WProtectMnemonic, self).__init__(code)
         self.name = self.recognize(code)
+        self.key_update = extract_obfuscation(code, is_ebx)["ebx"]
+        if any(["ESI" in str(line.args[1])
+                for line in code
+                if line.name == "MOV"]):
+            self.imm_update = extract_obfuscation(code, is_eax)["eax"]
+        self.ip_shift = self.guess_ip_shift(code)
+
+    @staticmethod
+    def guess_ip_shift(code):
+        shift = []
+        for line in code:
+            if line.name == "MOV":
+                args = str(line.args[1])
+                if "ESI" in args:
+                    if "@32" in args:
+                        shift.append(4)
+                    elif "@16" in args:
+                        shift.append(2)
+                    elif "@8" in args:
+                        shift.append(1)
+        return shift
 
     @staticmethod
     def recognize(code):

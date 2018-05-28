@@ -214,20 +214,24 @@ class WProtectTracer:
         unpack_map = {4: "I", 2: "H", 1: "b"}
         args = []
         parsed = 0
-        for to_parse in self.instructions[instruction - 1].ip_shift:
-            args.append(struct.unpack(unpack_map[to_parse],
-                                      self.vm.bin_stream.getbytes(
-                                          self.ip
-                                          - (to_parse - parsed - 1),
-                                      to_parse))[0])
-            parsed += to_parse
-        instruction_hook(self.ip, self.instructions[instruction - 1].name,
+#        for to_parse in self.instructions[instruction - 1].ip_shift:
+#            args.append(struct.unpack(unpack_map[to_parse],
+#                                      self.vm.bin_stream.getbytes(
+#                                          self.ip
+#                                          - (to_parse - parsed - 1),
+#                                      to_parse))[0])
+#            parsed += to_parse
+#        instruction_hook(self.ip, self.instructions[instruction - 1].name,
                          args)
 
         # working code
         if "imm" in self.instructions[instruction - 1].name:
-            self.imm_stack.append((args[0], parsed,
-                                   self.vm.bin_stream.is_addr_in(args[0])))
+            unpack_resolver = {"d": ("I", 4), "w": ("H", 2), "b": ("B", 1)}
+            unpack_type = self.instructions[instruction - 1].ip_shift[0]
+            imm = struct.unpack(unpack_type, self.vm.bin_stream.getbytes(
+                self.ip - (unpack_map[unpack_type] - 1), unpack_len))[0]
+            self.imm_stack.append((imm, unpack_len,
+                                   self.vm.bin_stream.is_addr_in(imm)))
         elif self.instructions[instruction - 1].name == "set_key":
             # jump
             if self.ins_stack[-2] == self.ins_stack[-3] == "d_push_imm":

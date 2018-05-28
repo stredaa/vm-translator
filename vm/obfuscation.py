@@ -22,38 +22,38 @@ def is_eax(line):
 
 def extract_obfuscation(code, filter_fn, machine=Machine("x86_32")):
     def load_asm(asm):
+        """Transform shellcode into a block and symbolically
+        execute it.
+        """
         bin_stream = bin_stream_str(asm)
         mdis = machine.dis_engine(bin_stream)
         asm_block = mdis.dis_block(0)
         ira = machine.ira(mdis.symbol_pool)
         ira.add_block(asm_block)
-        symbols_init = ira.arch.regs.all_regs_ids_byname
-        return SymbolicExecutionEngine(ira, symbols_init)
+        symbols_init = ira.arch.regs.regs_init
+        symbolic = SymbolicExecutionEngine(ira, symbols_init)
+        symbolic.run_block_at(0)
+        return symbolic
 
     i = 0
     asm = ""
-    while not filter_fn(code[i]):
+    while i < len(code) and not filter_fn(code[i]):
         i += 1
-    while filter_fn(code[i]):
+    while i < len(code) and filter_fn(code[i]):
         asm += code[i].b
         i += 1
     symbolic = load_asm(asm)
-    symbolic.emul_ir_block(0)
     translator = TranslatorPython()
-    return lambda EBX: eval(
-        translator.from_expr(symbolic.symbols[ExprId("EBX", 3, 2)]))
+
+    def eax(EAX_init, EBX_init):
+        return eval(translator.from_expr(symbolic.symbols[ExprId("EAX", 32)]))
+    def ebx(EBX_init):
+        return eval(translator.from_expr(symbolic.symbols[ExprId("EBX", 32)]))
+
+    return {"eax": eax, "ebx": ebx}
 
 
 def strip_vm_obfuscation(code):
-#    def is_jump(line):
-#        return line.name[0] == "J"
-
-#    has_imm = any(["ESI" in str(i) for i in code])
-
-#    relevant_code = filter(lambda x: len(x.args) == 0
-#                           or not (is_ebx(x)
-#                                   or (is_eax(x) and has_imm)
-#                                   or is_jump(x)), code)
     relevant_code = []
     is_esi = False
     ebx_init = True

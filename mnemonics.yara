@@ -17,7 +17,7 @@ rule shld
     condition:
         all of them
 }
-rule mnemonic_1
+rule w_read_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -93,7 +93,7 @@ rule pop_stack_top_base
     condition:
         all of them
 }
-rule mnemonic_6
+rule d_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -203,7 +203,7 @@ rule d_shl
     condition:
         all of them
 }
-rule mnemonic_12
+rule b_write_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -286,7 +286,7 @@ rule d_write_mem
     condition:
         all of them
 }
-rule mnemonic_17
+rule b_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -438,7 +438,7 @@ rule b_push_imm_zx
     condition:
         all of them
 }
-rule mnemonic_25
+rule b_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -472,7 +472,7 @@ rule cpuid
     condition:
         all of them
 }
-rule w_rol
+rule w_ror
 {
     /*
     MOV        CL, BYTE PTR [EBP]
@@ -510,7 +510,7 @@ rule w_shl
     condition:
         all of them
 }
-rule mnemonic_29
+rule w_write_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -526,7 +526,7 @@ rule mnemonic_29
     condition:
         all of them
 }
-rule mnemonic_30
+rule b_read_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -601,7 +601,7 @@ rule w_read_mem
     condition:
         all of them
 }
-rule mnemonic_35
+rule w_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -634,7 +634,7 @@ rule w_add
     condition:
         all of them
 }
-rule mnemonic_37
+rule d_write_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
@@ -650,7 +650,7 @@ rule mnemonic_37
     condition:
         all of them
 }
-rule mnemonic_38
+rule ins
 {
     /*
     SUB        EBP, 0x2
@@ -681,7 +681,7 @@ rule w_push_imm_zx
     condition:
         all of them
 }
-rule mnemonic_40
+rule w_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -782,7 +782,7 @@ rule w_push_imm
     condition:
         all of them
 }
-rule mnemonic_46
+rule set_key
 {
     /*
     MOV        EBX, DWORD PTR [EBP]
@@ -849,7 +849,7 @@ rule w_write_mem
     condition:
         all of them
 }
-rule mnemonic_50
+rule d_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -880,7 +880,7 @@ rule set_pc
     condition:
         all of them
 }
-rule mnemonic_52
+rule d_read_stack
 {
     /*
     MOV        EAX, DWORD PTR [ESI + 0xFFFFFFFC]
