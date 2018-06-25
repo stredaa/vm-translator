@@ -199,41 +199,44 @@ class WProtectTracer:
         self.key = self.vm.key_update(self.key)
 
         instruction = self.vm.bin_stream.getbytes(self.ip)
-        instruction = self.vm.imm_update(ord(instruction), self.key)
+        instruction = self.vm.imm_update(ord(instruction), self.key) - 1
         self.ip -= 1
-        self.ins_stack.append(self.instructions[instruction - 1].name)
+        self.ins_stack.append(self.instructions[instruction].name)
         return instruction
 
     def step(self, instruction_hook=lambda ip, instruction, params: None):
         instruction = self.read_instruction()
 
         # preamble
-        self.key = self.instructions[instruction - 1].key_update(self.key)
+        self.key = self.instructions[instruction].key_update(self.key)
 
         # instruction hook
-        unpack_map = {4: "I", 2: "H", 1: "b"}
+        unpack_map = {4: "I", 2: "H", 1: "B"}
         args = []
         parsed = 0
-        for to_parse in self.instructions[instruction - 1].ip_shift:
+        for to_parse in self.instructions[instruction].ip_shift:
             args.append(struct.unpack(unpack_map[to_parse],
                                       self.vm.bin_stream.getbytes(
                                           self.ip
                                           - (to_parse - parsed - 1),
                                       to_parse))[0])
             parsed += to_parse
-        instruction_hook(self.ip, self.instructions[instruction - 1].name,
-                         args)
 
         # working code
-        if "imm" in self.instructions[instruction - 1].name:
+        next_offset = [self.ip
+                       - sum(self.instructions[instruction].ip_shift)]
+
+        if "imm" in self.instructions[instruction].name:
             self.imm_stack.append((args[0], parsed,
                                    self.vm.bin_stream.is_addr_in(args[0])))
-        elif self.instructions[instruction - 1].name == "set_key":
+        elif self.instructions[instruction].name == "set_key":
             # jump
             if self.ins_stack[-2] == self.ins_stack[-3] == "d_push_imm":
-                self.key = self.imm_stack[-1][0]
-                self.ip = self.imm_stack[-2][0] - 1
-                return self
+                branch = WProtectTracer(self.vm, self.instructions)
+                branch.key = self.imm_stack[-1][0]
+                branch.ip = self.imm_stack[-2][0] - 1
+                next_offset = [branch.ip]
+
             # conditional jump
             else:
                 new_key = self.imm_stack[-1][0]
@@ -246,10 +249,19 @@ class WProtectTracer:
                 branch2 = WProtectTracer(self.vm, self.instructions)
                 branch2.key = new_key
                 branch2.ip = dest2 - 1
+                next_offset = [branch1.ip, branch2.ip]
+        instruction_hook(self.ip + 1, self.instructions[instruction],
+                         args, next_offset)
+        if self.instructions[instruction].name == "set_key":
+            # jump
+            if self.ins_stack[-2] == self.ins_stack[-3] == "d_push_imm":
+                return branch,
+            # conditional jump
+            else:
                 return branch1, branch2
-        elif self.instructions[instruction - 1].name == "ret":
-            return None
+        elif self.instructions[instruction].name == "ret":
+            return ()
 
         # epilogue
-        self.ip -= sum(self.instructions[instruction - 1].ip_shift)
-        return self
+        self.ip -= sum(self.instructions[instruction].ip_shift)
+        return self,

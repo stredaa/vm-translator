@@ -42,6 +42,12 @@ class WProtectMnemonic(Mnemonic):
             self.imm_update = extract_obfuscation(code, is_eax)["eax"]
         self.ip_shift = self.guess_ip_shift(code)
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return get_bytes(self.code) == get_bytes(other.code)
+        else:
+            return False
+
     @staticmethod
     def guess_ip_shift(code):
         shift = []
