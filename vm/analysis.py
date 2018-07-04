@@ -206,7 +206,6 @@ class WProtectTracer:
 
     def step(self, instruction_hook=lambda ip, instruction, params: None):
         instruction = self.read_instruction()
-
         # preamble
         self.key = self.instructions[instruction].key_update(self.key)
 
@@ -222,6 +221,7 @@ class WProtectTracer:
                                       to_parse))[0])
             parsed += to_parse
 
+        print self.instructions[instruction].name, map(hex, args)
         # working code
         next_offset = [self.ip
                        - sum(self.instructions[instruction].ip_shift)]
