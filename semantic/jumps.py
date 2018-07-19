@@ -211,21 +211,21 @@ def is_jbe(block):
 
 def guess_conditional_jump(block):
     if not is_cjmp(block):
-        return "JMP %s_offset;"
+        return "JMP offset_%s;"
 
     if is_jle(block):
-        return "JLE %s_offset; JMP %s_offset;"
+        return "JLE offset_%s; JMP offset_%s;"
     if is_jbe(block):
-        return "JBE %s_offset; JMP %s_offset;"
+        return "JBE offset_%s; JMP offset_%s;"
     if is_jl(block):
-        return "JL %s_offset; JMP %s_offset;"
+        return "JL offset_%s; JMP offset_%s;"
     if is_jz(block):
-        return "JZ %s_offset; JMP %s_offset;"
+        return "JZ offset_%s; JMP offset_%s;"
     if is_jb(block):
-        return "JB %s_offset; JMP %s_offset;"
+        return "JB offset_%s; JMP offset_%s;"
     if is_jo(block):
-        return "JO %s_offset; JMP %s_offset;"
+        return "JO offset_%s; JMP offset_%s;"
     if is_js(block):
-        return "JS %s_offset; JMP %s_offset;"
+        return "JS offset_%s; JMP offset_%s;"
     if is_jp(block):
-        return "JP %s_offset; JMP %s_offset;"
+        return "JP offset_%s; JMP offset_%s;"

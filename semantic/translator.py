@@ -205,15 +205,15 @@ def translate_blocks(blocks):
 
     def assemble(code, entry_point):
         ks = Ks(KS_ARCH_X86, KS_MODE_32)
-        asm = "%s JMP %s_offset; %s" % (_init(), entry_point, code)
-        print asm
+        asm = "%s JMP offset_%s; %s" % (_init(), entry_point, code)
+        print asm.replace(";", "\n")
         return "".join(map(chr, ks.asm(asm)[0]))
 
     asm = ""
     entry_point = 0x0
     for offset, block in blocks.iteritems():
         entry_point = max(entry_point, offset)
-        assembly = "%s_offset:; %s" % (offset, "".join(
-            [fill_instruction(x, block) for x in block][-1]))
+        assembly = "offset_%s:; %s" % (offset, "".join(
+            [fill_instruction(x, block) for x in block]))
         asm += assembly
     return assemble(asm, entry_point)
