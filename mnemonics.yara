@@ -93,7 +93,7 @@ rule pop_stack_top_base
     condition:
         all of them
 }
-rule d_pop_reg
+rule d_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -286,7 +286,7 @@ rule d_write_mem
     condition:
         all of them
 }
-rule b_pop_reg
+rule b_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -438,7 +438,7 @@ rule b_push_imm_zx
     condition:
         all of them
 }
-rule b_push_reg
+rule b_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -601,7 +601,7 @@ rule w_read_mem
     condition:
         all of them
 }
-rule w_push_reg
+rule w_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -650,7 +650,7 @@ rule d_write_stack
     condition:
         all of them
 }
-rule ins
+rule dispatch
 {
     /*
     SUB        EBP, 0x2
@@ -681,7 +681,7 @@ rule w_push_imm_zx
     condition:
         all of them
 }
-rule w_pop_reg
+rule w_push_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]
@@ -849,7 +849,7 @@ rule w_write_mem
     condition:
         all of them
 }
-rule d_push_reg
+rule d_pop_reg
 {
     /*
     MOV        AL, BYTE PTR [ESI + 0xFFFFFFFF]

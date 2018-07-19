@@ -103,32 +103,26 @@ class WProtectControlFlow(object):
         return graph
 
     def get_specials(self):
-        """Get an entry point (in WProtect highest address) and a set
-        of addresses to be labeled due to being used by jumps.
+        """Get a set of addresses to be labeled due to being used by jumps.
 
         Returns:
-            int: an offset of a suspected entry_point
             set: a set of all addresses to be labeled
         """
-        entry_point = 0
         block_start = set()
 
         for offset, value in self.nodes.iteritems():
-            entry_point = max(offset, entry_point)
-            if value["predecessors"] >= 2:
+            if not value["predecessors"] == 1:
                 block_start.add(offset)
             if len(value["successors"]) >= 2:
                 for successor in value["successors"]:
                     block_start.add(successor)
 
-        return entry_point, block_start
+        return block_start
 
-    def compile_blocks(self, blocks, offset=None, labeled_offsets=None):
+    def compile_blocks(self, offset=None, labeled_offsets=None):
         """Compile nodes into continuous blocks (IDAPro-like blocks).
 
         Args:
-            blocks (dict): dictionary of continuous blocks, also serves
-                as output variable (passed by reference)
             offset (int): offset of the first instruction to process
             labeled_offsets (list): list of offsets that are targets
                 of jumps or contain jumps
@@ -140,24 +134,16 @@ class WProtectControlFlow(object):
                 a dictionary indexed by offset
         """
         if not all([offset, labeled_offsets]):
-            offset, labeled_offsets = self.get_specials()
+            labeled_offsets = self.get_specials()
 
-        if offset in blocks:
-            return blocks
+        blocks = {}
 
-        block = {}
-        blocks[offset] = block
-        while (len(self.nodes[offset]["successors"]) <= 1
-               and not all([x in labeled_offsets
-                            for x in self.nodes[offset]["successors"]])):
-            if offset in block:
-                return
-            block[offset] = self.nodes[offset]
-            try:
+        for start in labeled_offsets:
+            offset = start
+            blocks[start] = []
+            while self.nodes[offset]["instruction"].name not in ["ret", "set_key"]:
+                assert len(self.nodes[offset]["successors"]) == 1
+                blocks[start].append(self.nodes[offset])
                 offset = self.nodes[offset]["successors"][0]
-            except KeyError:
-                return
-        for successor in self.nodes[offset]["successors"]:
-            self.compile_blocks(blocks, offset=successor,
-                                labeled_offsets=labeled_offsets)
+            blocks[start].append(self.nodes[offset])
         return blocks

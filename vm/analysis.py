@@ -1,3 +1,6 @@
+"""Provides a toolkit for static analysis.
+"""
+
 from logging import getLogger, StreamHandler, Formatter, DEBUG, INFO
 from sys import stdout
 import struct
@@ -15,15 +18,35 @@ from vm.obfuscation import is_ebx, is_eax, extract_obfuscation
 
 
 class ASMBlock():
+    """A wrapper for sequences of Miasm instructions.
+    """
     def __init__(self, lines):
+        """
+        Args:
+            lines (list): list of Miasm intructions
+        """
         self.code = lines
 
     def asm(self):
+        """Extract bytes from the instruction
+
+        Returns:
+            list: byte representation of the ASMBlock (x86 assembly)
+        """
         return [line.b for line in self.code]
 
 
 class PEAnalysis(object):
+    """A basic static analysis for binary files that utilises Miasm
+    to recover functions contained in the file.
+    """
+
     def _set_logging(self, verbose):
+        """Setup up an internal logger.
+
+        Args:
+            verbose (bool): affects log verbosity
+        """
         self._logger = getLogger(hex(hash(self)))
         if verbose:
             self._logger.setLevel(DEBUG)
@@ -34,6 +57,12 @@ class PEAnalysis(object):
         self._logger.addHandler(log_handler)
 
     def __init__(self, filename, verbose=False):
+        """Load binary file.
+
+        Args:
+            filename (str): path to a file to be analyzed
+            verbose (bool): affects log verbosity
+        """
         self._container = Container.from_stream(open(filename))
         self.bin_stream = self._container.bin_stream
         self.entry_point = self._container.entry_point
@@ -48,10 +77,21 @@ class PEAnalysis(object):
         self._logger.info("PE loaded")
 
     def _update_interval(self, block):
-        for l in block.lines:
-            self.interval += interval([(l.offset, l.offset + l.l)])
+        """Update analyzed interval.
+
+        Args:
+            block (AsmBlock): extend interval describing used code
+                by offsets from this block
+        """
+        for line in block.lines:
+            self.interval += interval([(line.offset, line.offset + line.l)])
 
     def process_fn(self, offset):
+        """Use Miasm to explore reachable code and add discovered functions.
+
+        Args:
+            offset (int): a starting offset, preferably entry point
+        """
         if offset in self.fn:
             return
 
@@ -72,12 +112,22 @@ class PEAnalysis(object):
                 self.process_fn(dest.name.offset)
 
     def process_rest(self):
+        """Try to naively explore bytes lying in regions that are not
+        covered by interval.
+        """
         for _, right in self.interval.intervals:
             if right in self.fn:
                 continue
             self.process_fn(right)
 
     def analyze(self, analyze_unreachable=False):
+        """Explore the binary file, try to find code. The search
+        starts at the binary file's declared entry point.
+
+        Args:
+            analyze_unreachable (bool): analyze code that could not
+                be located during reachable code exploration.
+        """
         self.process_fn(self.entry_point)
         self._logger.info("reachable code analysis done")
         self.deep = 1
@@ -88,7 +138,15 @@ class PEAnalysis(object):
 
 
 class WProtectEmulator(PEAnalysis):
+    """Extends PEAnalysis to support WProtected binary files. Handles
+    virtual machine extraction and instruction recognition.
+    """
     def _initialize_parameters(self, block):
+        """Extracts machine's instruction loader into abstracted form.
+
+        Args:
+            block (AsmBlock): Miasm instruction loader code block
+        """
         self.key_update = extract_obfuscation(block.lines, is_ebx)["ebx"]
         self.imm_update = extract_obfuscation(block.lines, is_eax)["eax"]
 
@@ -107,6 +165,12 @@ class WProtectEmulator(PEAnalysis):
                     self.instruction_pointer = line.args[1].arg.arg
 
     def detect(self, block):
+        """Detects machine's instruction loader via YARA. Several heuristics
+        are used to validate the result.
+
+        Args:
+            block (AsmBlock): Miasm block to be tested
+        """
         data = "".join([x.b for x in block.lines])
         switch = yara.compile("WProtect.yara")
         match = switch.match(data=data)
@@ -133,6 +197,9 @@ class WProtectEmulator(PEAnalysis):
         return offset
 
     def _filter(self):
+        """Filter all code blocks that may contain WProtect's instruction
+        loader.
+        """
         processed = [[self.detect(block)
                       for block in fn]
                      for fn in self.fn.values()]
@@ -141,6 +208,12 @@ class WProtectEmulator(PEAnalysis):
                       [item for sublist in processed for item in sublist])
 
     def find(self, override_unreachable=False):
+        """Find function in the binary file and identify the one
+        with Wprotect virtual machine.
+
+        Args:
+            override_unreachable (bool): analyze unreachable code
+        """
         if override_unreachable and self.deep < 2:
             self._logger.info(
                 "optimization overriden, analyzing unreachable code")
@@ -162,7 +235,27 @@ class WProtectEmulator(PEAnalysis):
         return True
 
     def recover_mnemonics(self, offset, mnemonic_cls, amount=56):
+        """Match mnemonics to instruction from the instruction table.
+
+        Args:
+            offset (int): instruction table offset
+            mnemonic_cls (vm.mnemonic.WProtectMnemonic): a class handling
+                instruction recongition itself
+            amount (int): instruction count
+
+        Returns:
+            int: a doubleword located at the beginning of the instruction
+                table
+            list: a list of matched WProtect mnemonics
+        """
         def get_block(offset):
+            """Get an extended block, some instruction contain calls
+            or jumps and thus we need to extend their blocks to include
+            all the instruction's code.
+
+            Args:
+                offset (int): offset at which an instruction starts
+            """
             mdis = self.machine.dis_engine(self.bin_stream)
             block = mdis.dis_block(offset)
 
@@ -186,7 +279,16 @@ class WProtectEmulator(PEAnalysis):
 
 
 class WProtectTracer:
+    """Walk though WProtect byte-code.
+    """
     def __init__(self, vm, instructions):
+        """Initialize the tracer with data and corresponding instruction set.
+
+        Args:
+            vm (vm.analysis.WProtectEmulator): analyzed binary file
+            instructions (list): a list of vm.mnemonic.WProtectMnemonic
+                corresponding to WProtect's instruction set.
+        """
         self.vm = vm
         self.instructions = instructions
 
@@ -196,6 +298,8 @@ class WProtectTracer:
         self.ins_stack = []
 
     def read_instruction(self):
+        """WProtect instruction loader
+        """
         self.key = self.vm.key_update(self.key)
 
         instruction = self.vm.bin_stream.getbytes(self.ip)
@@ -204,12 +308,22 @@ class WProtectTracer:
         self.ins_stack.append(self.instructions[instruction].name)
         return instruction
 
-    def step(self, instruction_hook=lambda ip, instruction, params: None):
+    def step(self,
+             instruction_hook=lambda ip, instruction, params, successor: None):
+        """Proceed to the next instruction and return next automaton's state.
+
+        Args:
+            instruction_hook(lambda offset, instruction, args, successor):
+                a hook for further instruction processing
+
+        Returns:
+            list: a list of WProtectTracer instances corresponding to next
+                state (or states if the instruction is conditional jump)
+        """
         instruction = self.read_instruction()
         # preamble
         self.key = self.instructions[instruction].key_update(self.key)
 
-        # instruction hook
         unpack_map = {4: "I", 2: "H", 1: "B"}
         args = []
         parsed = 0
@@ -218,10 +332,11 @@ class WProtectTracer:
                                       self.vm.bin_stream.getbytes(
                                           self.ip
                                           - (to_parse - parsed - 1),
-                                      to_parse))[0])
+                                          to_parse))[0])
             parsed += to_parse
+        args = [self.instructions[instruction].imm_update(imm, self.key)
+                for imm in args]
 
-        print self.instructions[instruction].name, map(hex, args)
         # working code
         next_offset = [self.ip
                        - sum(self.instructions[instruction].ip_shift)]
@@ -250,6 +365,7 @@ class WProtectTracer:
                 branch2.key = new_key
                 branch2.ip = dest2 - 1
                 next_offset = [branch1.ip, branch2.ip]
+        # instruction hook
         instruction_hook(self.ip + 1, self.instructions[instruction],
                          args, next_offset)
         if self.instructions[instruction].name == "set_key":

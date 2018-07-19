@@ -6,12 +6,25 @@ from miasm2.ir.translators.python import TranslatorPython
 
 
 def is_ebx(line):
+    """Determines whether the line of code is a part of rolling key
+    update (EBX register).
+
+    Args:
+        line (AsmBlock): one asm instruction with its operands
+    """
     return (len(line.args) >= 1
             and str(line.args[0]) in ["EBX", "BX", "BL"]
             and not line.name == "MOV")
 
 
 def is_eax(line):
+    """Determines whether the line of code is a part of immediate value
+    unmasking (EAX register).
+
+    Args:
+        line (AsmBlock): one asm instruction with its operands
+    """
+
     return (len(line.args) >= 1
             and str(line.args[0]) in ["EAX", "AX", "AL"]
             and (len(line.args) == 1
@@ -21,9 +34,21 @@ def is_eax(line):
 
 
 def extract_obfuscation(code, filter_fn, machine=Machine("x86_32")):
+    """Extract obfuscation routines from the code block.
+
+    Args:
+        code (AsmBlock): Miasm code block
+
+    Returns:
+        lambda eax, ebx: immediate value deobfuscation
+        lambda ebx: rolling key update
+    """
     def load_asm(asm):
-        """Transform shellcode into a block and symbolically
+        """Transform a machine code into a block and symbolically
         execute it.
+
+        Args:
+            asm (string): machine code
         """
         bin_stream = bin_stream_str(asm)
         mdis = machine.dis_engine(bin_stream)
@@ -47,6 +72,7 @@ def extract_obfuscation(code, filter_fn, machine=Machine("x86_32")):
 
     def eax(EAX_init, EBX_init):
         return eval(translator.from_expr(symbolic.symbols[ExprId("EAX", 32)]))
+
     def ebx(EBX_init):
         return eval(translator.from_expr(symbolic.symbols[ExprId("EBX", 32)]))
 
@@ -54,6 +80,16 @@ def extract_obfuscation(code, filter_fn, machine=Machine("x86_32")):
 
 
 def strip_vm_obfuscation(code):
+    """Strip the given code block of lines belonging to obfuscation
+    routines.
+
+    Args:
+        code (ASMBlock): Miasm code block
+
+    Returns:
+        list: a list of Miasm code lines that are not part of
+            obfuscation routines
+    """
     relevant_code = []
     is_esi = False
     ebx_init = True
@@ -76,4 +112,9 @@ def strip_vm_obfuscation(code):
 
 
 def get_bytes(code):
+    """Transform Miasm code block into a corresponding machine code.
+
+    Args:
+        code (AsmBlock): Miasm code block
+    """
     return [line.b for line in code]

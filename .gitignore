@@ -1,11 +1,4 @@
 *.pyc
-*.exe
 
 .ipynb_checkpoints
-train_batch
-mnemonics
-if/*
-if_better/*
-testing/*
-if_jle/*
-if_jz/*
+legacy/*

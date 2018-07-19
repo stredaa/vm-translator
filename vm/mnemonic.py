@@ -40,6 +40,8 @@ class WProtectMnemonic(Mnemonic):
                 for line in code
                 if line.name == "MOV"]):
             self.imm_update = extract_obfuscation(code, is_eax)["eax"]
+        else:
+            self.imm_update = None
         self.ip_shift = self.guess_ip_shift(code)
 
     def __eq__(self, other):
