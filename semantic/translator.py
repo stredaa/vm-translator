@@ -87,8 +87,8 @@ D_ROL = "%s POP eax; ROL eax, cl; PUSH eax; PUSHFD;" % _pop_8("b")
 
 B_ADD = "%s %s ADD al, cl; %s; PUSHFD;" \
         % (_pop_8("b"), _pop_8("a"), _push_8("a"))
-W_ADD = "%s POP ax; ADD ax, cl; PUSH ax; PUSHFD;" % _pop_8("b")
-D_ADD = "%s POP eax; ADD eax, cl; PUSH eax; PUSHFD;" % _pop_8("b")
+W_ADD = "POP cx; POP ax; ADD ax, cx; PUSH ax; PUSHFD;"
+D_ADD = "POP ecx; POP eax; ADD eax, ecx; PUSH eax; PUSHFD;"
 
 SET_PC = semantic.jumps.guess_conditional_jump
 SET_KEY = SET_PC
@@ -206,7 +206,7 @@ def translate_blocks(blocks):
     def assemble(code, entry_point):
         ks = Ks(KS_ARCH_X86, KS_MODE_32)
         asm = "%s JMP offset_%s; %s" % (_init(), entry_point, code)
-        print asm.replace(";", "\n")
+        # print asm.replace("; ", "\n").replace(";", "\n")
         return "".join(map(chr, ks.asm(asm)[0]))
 
     asm = ""
