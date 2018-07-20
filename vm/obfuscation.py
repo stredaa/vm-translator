@@ -10,8 +10,8 @@ from miasm2.ir.translators.python import TranslatorPython
 
 
 def is_ebx(line):
-    """Determines whether the line of code is a part of rolling key
-    update (EBX register).
+    """Determines whether the line of code is a part of the rolling
+    key update (EBX register).
 
     Args:
         line (AsmBlock): one asm instruction with its operands
@@ -22,8 +22,8 @@ def is_ebx(line):
 
 
 def is_eax(line):
-    """Determines whether the line of code is a part of immediate value
-    unmasking (EAX register).
+    """Determines whether the line of code is a part of the immediate
+    value unmasking (EAX register).
 
     Args:
         line (AsmBlock): one asm instruction with its operands

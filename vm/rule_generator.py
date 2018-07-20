@@ -1,5 +1,5 @@
-"""This module facilitates YARA rule generation for virtual machine
-instructions
+"""This module facilitates the generation or YARA rules that
+describe WProtect instructions.
 """
 
 from jinja2 import Template
@@ -8,7 +8,7 @@ from vm.obfuscation import get_bytes, strip_vm_obfuscation
 
 
 def generate_reghex(vm_instructions):
-    """Generate a hex string detection covering the given
+    """Generate a hex string detection matching the given
     instruction.
 
     Args:
@@ -57,7 +57,7 @@ def generate_yara(name, strings, hexes, regexes, comment="",
 
 
 def generate_rules(vm_instructions, filename="mnemonics.yara"):
-    """Generate a file containing YARA rules for all given instrucions.
+    """Generate a file containing YARA rules for all given instructions.
 
     Args:
         vm_instructions (list): a list of instructions, each instruction

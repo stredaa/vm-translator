@@ -1,10 +1,10 @@
 """This module provides tools for WProtect control flow
-reconstruction
+reconstruction.
 """
 
 
 class UnknownInstructionError(Exception):
-    """Error class inteded for WProtectControlFlow when an unknown
+    """Error class intended for WProtectControlFlow when an unknown
     instruction is encountered during step-by-step emulation.
     """
     def __init__(self):
@@ -133,8 +133,8 @@ class WProtectControlFlow(object):
                 of jumps or contain jumps
 
         Returns:
-            dict: actually dictionary of dictionaries, corresponds
-                to initial variable blocks indexed by offsets;
+            dict: dictionary of dictionaries, corresponds to initial
+                variable blocks indexed by offsets;
                 every value corresponds to a block, every block is
                 a dictionary indexed by offset
         """
@@ -146,7 +146,8 @@ class WProtectControlFlow(object):
         for start in labeled_offsets:
             offset = start
             blocks[start] = []
-            while self.nodes[offset]["instruction"].name not in ["ret", "set_key"]:
+            while (self.nodes[offset]["instruction"].name
+                   not in ["ret", "set_key"]):
                 assert len(self.nodes[offset]["successors"]) == 1
                 blocks[start].append(self.nodes[offset])
                 offset = self.nodes[offset]["successors"][0]

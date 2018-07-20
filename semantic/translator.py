@@ -185,7 +185,7 @@ TRANSLATION_TABLE = {
 
 
 def translate_blocks(blocks):
-    """A function that translates code blocks into assembly code.
+    """Translate code blocks into the machine code.
 
     Args:
         blocks (dict): dictionary of blocks indexed by offsets

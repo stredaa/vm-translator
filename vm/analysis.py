@@ -310,7 +310,8 @@ class WProtectTracer:
 
     def step(self,
              instruction_hook=lambda ip, instruction, params, successor: None):
-        """Proceed to the next instruction and return next automaton's state.
+        """Proceed to the next instruction and return all possible
+        following states.
 
         Args:
             instruction_hook(lambda offset, instruction, args, successor):

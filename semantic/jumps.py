@@ -18,7 +18,7 @@ def is_cjmp(block):
 
 def _test_recipe(recipe, block):
     """Test whether the given block contains a given subsequence. Note
-    that these the verifier looks for instructions and tests whether
+    that the verifier looks for instructions and tests whether
     they have the right parameter (this may require some redundancy in
     recipes).
 
