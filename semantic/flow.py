@@ -1,3 +1,8 @@
+"""This module provides tools for WProtect control flow
+reconstruction
+"""
+
+
 class UnknownInstructionError(Exception):
     """Error class inteded for WProtectControlFlow when an unknown
     instruction is encountered during step-by-step emulation.

@@ -1,4 +1,6 @@
-"""Contains WProtect instruction translations into Assembly Language."""
+"""This module provides translations of WProtect instruction into
+Assembly Language.
+"""
 
 from keystone import Ks, KS_ARCH_X86, KS_MODE_32
 import semantic.jumps

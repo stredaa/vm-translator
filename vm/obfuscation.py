@@ -1,3 +1,7 @@
+"""This module provides WProtect-specific tools for
+obfuscation extraction, abstraction, and removal.
+"""
+
 from miasm2.analysis.machine import Machine
 from miasm2.ir.symbexec import SymbolicExecutionEngine
 from miasm2.expression.expression import ExprId
